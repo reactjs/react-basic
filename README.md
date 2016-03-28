@@ -176,7 +176,7 @@ function FancyUserList(users) {
 }
 
 const box = FancyUserList(data.users);
-const resolvedChildren = children(likesPerUser, updateUserLikes);
+const resolvedChildren = box.children(likesPerUser, updateUserLikes);
 const resolvedBox = {
   ...box,
   children: resolvedChildren
