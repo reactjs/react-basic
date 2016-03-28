@@ -4,7 +4,7 @@ This document is my attempt to formally explain my mental model of React. The in
 
 There may certainly be some premises that are debatable and the actual design of this example may have bugs and gaps. This is just the beginning of formalizing it. Feel free to send a pull request if you have a better idea of how to formalize it. The progression from simple -> complex should make sense along the way without too much library details shining through.
 
-The actual implementation of React.js is full of pragmatic solutions, incremental steps, algorithmic optimizations, debug tooling and things you need to make it actually useful. Those things are more fleeting, can change over time if it is valuable enough and have high enough priority. The actual implementation is much more difficult to reason about.
+The actual implementation of React.js is full of pragmatic solutions, incremental steps, algorithmic optimizations, legacy code, debug tooling and things you need to make it actually useful. Those things are more fleeting, can change over time if it is valuable enough and have high enough priority. The actual implementation is much more difficult to reason about.
 
 I like to have a simpler mental model that I can ground myself in.
 
@@ -52,7 +52,7 @@ function FancyUserBox(user) {
 
 ## Composition
 
-To achieve truly reusable features, it is not enough to simply reuse leaves and build new containers for them. You also need to be able to build abstractions from the containers that *compose* other abstractions.
+To achieve truly reusable features, it is not enough to simply reuse leaves and build new containers for them. You also need to be able to build abstractions from the containers that *compose* other abstractions. The way I think about "composition" is that they're combining two or more different abstractions into a new one.
 
 ```js
 function FancyBox(children) {
@@ -106,7 +106,7 @@ FancyNameBox(
 
 ## Memoization
 
-Calling the same function over and over again is wasteful if we know that the function is pure. We can create a memoized version of a function that keep track of the last argument and last result. That way we don't have to reexecute it if we keep using the same value.
+Calling the same function over and over again is wasteful if we know that the function is pure. We can create a memoized version of a function that keeps track of the last argument and last result. That way we don't have to reexecute it if we keep using the same value.
 
 ```js
 function memoize(fn) {
@@ -158,15 +158,15 @@ function updateUserLikes(id, likeCount) {
 UserList(data.users, likesPerUser, updateUserLikes);
 ```
 
-*NOTE: We now have multiple different for FancyNameBox. That breaks our memoization because we can only remember one value at a time. More on that below.*
+*NOTE: We now have multiple different arguments passed to FancyNameBox. That breaks our memoization because we can only remember one value at a time. More on that below.*
 
 ## Continuations
 
 Unfortunately, since there are so many list of lists all over the place in UIs, it becomes quite a lot of boilerplate to manage that explicitly.
 
-We can move some of this boilerplate out of our critical business logic by deferring execution of a function. For example, by using "currying" (`bind` in JavaScript).
+We can move some of this boilerplate out of our critical business logic by deferring execution of a function. For example, by using "currying" (`bind` in JavaScript). Then we pass the state through from outside our core functions that are now free of boilerplate.
 
-Then we pass the state through from outside our core functions that are now free of boilerplate.
+This isn't reducing boilerplate but is at least moving it out of the critical business logic.
 
 ```js
 function FancyUserList(users) {
