@@ -263,7 +263,7 @@ It turns out that it is kind of a PITA to pass every little value you might need
 
 Sometimes the data dependencies doesn't neatly follow the abstraction tree. For example, in layout algorithms you need to know something about the size of your children before you can completely fulfill their position.
 
-Now, this example is a bit "out there". I'll use [Algebraic Effects](http://math.andrej.com/eff/) as [proposed for ECMAScript](https://esdiscuss.org/topic/one-shot-delimited-continuations-with-effect-handlers). If you're familiar with functional programming, they solve the same problem for monads.
+Now, this example is a bit "out there". I'll use [Algebraic Effects](http://math.andrej.com/eff/) as [proposed for ECMAScript](https://esdiscuss.org/topic/one-shot-delimited-continuations-with-effect-handlers). If you're familiar with functional programming, they avoiding the intermediate ceremony imposed by monads.
 
 ```js
 function ThemeBorderColorRequest() { }
