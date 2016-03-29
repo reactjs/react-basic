@@ -271,7 +271,8 @@ function ThemeBorderColorRequest() { }
 function FancyBox(children) {
   const color = raise new ThemeBorderColorRequest();
   return {
-    borderStyle: '1px solid blue',
+    borderWidth: '1px',
+    borderColor: color,
     children: children
   };
 }
