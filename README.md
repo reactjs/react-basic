@@ -164,7 +164,7 @@ UserList(data.users, likesPerUser, updateUserLikes);
 
 Unfortunately, since there are so many lists of lists all over the place in UIs, it becomes quite a lot of boilerplate to manage that explicitly.
 
-We can move some of this boilerplate out of our critical business logic by deferring execution of a function. For example, by using "currying" (`bind` in JavaScript). Then we pass the state through from outside our core functions that are now free of boilerplate.
+We can move some of this boilerplate out of our critical business logic by deferring execution of a function. For example, by using "currying" ([`bind`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind) in JavaScript). Then we pass the state through from outside our core functions that are now free of boilerplate.
 
 This isn't reducing boilerplate but is at least moving it out of the critical business logic.
 
