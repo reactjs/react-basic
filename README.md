@@ -145,7 +145,7 @@ function UserList(users, likesPerUser, updateUserLikes) {
   return users.map(user => FancyNameBox(
     user,
     likesPerUser.get(user.id),
-    () => updateUserLikes(user.id, clicksPerUser.get(user.id) + 1)
+    () => updateUserLikes(user.id, likesPerUser.get(user.id) + 1)
   ));
 }
 
