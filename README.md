@@ -72,7 +72,7 @@ function UserBox(user) {
 
 ## State
 
-A UI is NOT simply a replication of server / business logic state. There is actually a lot of state that is specific to a specific projection and not others. For example, if you start typing in a text field. That may or may not be replicated to other tabs or to your mobile device. Scroll position is a typical example that you almost never want to replicate across multiple projections.
+A UI is NOT simply a replication of server / business logic state. There is actually a lot of state that is specific to an exact projection and not others. For example, if you start typing in a text field. That may or may not be replicated to other tabs or to your mobile device. Scroll position is a typical example that you almost never want to replicate across multiple projections.
 
 We tend to prefer our data model to be immutable. We thread functions through that can update state as a single atom at the top.
 
