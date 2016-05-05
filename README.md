@@ -33,6 +33,7 @@ function FancyUserBox(user) {
     borderStyle: '1px solid blue',
     childContent: [
       'Name: ',
+      // Embed the render output of `NameBox`.
       NameBox(user.firstName + ' ' + user.lastName)
     ]
   };
@@ -56,6 +57,8 @@ To achieve truly reusable features, it is not enough to simply reuse leaves and 
 
 ```js
 function FancyBox(children) {
+  // `FancyBox` doesn't need to know what's inside it.
+  // Instead, it accepts `children` as an argument.
   return {
     borderStyle: '1px solid blue',
     children: children
@@ -63,9 +66,19 @@ function FancyBox(children) {
 }
 
 function UserBox(user) {
+  // Now we can put different `children` inside `FancyBox` in different parts of UI.
+  // For example, `UserBox` is a `FancyBox` with a `NameBox` inside.
   return FancyBox([
     'Name: ',
     NameBox(user.firstName + ' ' + user.lastName)
+  ]);
+}
+
+function MessageBox(message) {
+  // However a `MessageBox` is a `FancyBox` with a message.
+  return FancyBox([
+    'You received a new message: ',
+    message
   ]);
 }
 ```
@@ -122,6 +135,8 @@ function memoize(fn) {
   };
 }
 
+// Has the same API as NameBox but caches its result if its single argument
+// has not changed since the last time `MemoizedNameBox` was called.
 var MemoizedNameBox = memoize(NameBox);
 
 function NameAndAgeBox(user, currentTime) {
@@ -132,6 +147,12 @@ function NameAndAgeBox(user, currentTime) {
     currentTime - user.dateOfBirth
   ]);
 }
+
+// We calculate the output of `NameAndAgeBox` twice, so it will call `MemoizedNameBox` twice.
+// However `NameBox` is only going to be called once because its argument has not changed.
+const sebastian = { firstName: 'Sebastian', lastName: 'Markbåge' };
+NameAndAgeBox(sebastian, Date.now());
+NameAndAgeBox(sebastian, Date.now());
 ```
 
 ## Lists
@@ -170,16 +191,31 @@ This isn't reducing boilerplate but is at least moving it out of the critical bu
 
 ```js
 function FancyUserList(users) {
-  return FancyBox(
-    UserList.bind(null, users)
-  );
+  // `UserList` needs three arguments: `users`, `likesPerUser`, and `updateUserLikes`.
+
+  // We want `FancyUserList` to be ignorant of the fact that `UserList` also
+  // needs `likesPerUser` and `updateUserLikes` so that we don't have to wire
+  // the arguments for bookkeeping this state through `FancyUserList`.
+  
+  // We can cheat by only providing the first argument for now:
+  const children = UserList.bind(null, users)
+  
+  // Unlike in the previous examples, `children` is a partially applied function
+  // that still needs `likesPerUser` and `updateUserLikes` to return the real children.
+
+  // However, `FancyBox` doesn't "read into" its children and just uses them in its output,
+  // so we can let some kind of external system inject the missing arguments later.
+  return FancyBox(children);
 }
 
+// The render output is not fully known yet because the state is not injected.
 const box = FancyUserList(data.users);
-const resolvedChildren = box.children(likesPerUser, updateUserLikes);
+// `box.children()` is a function, so we finally inject the state arguments.
+const children = box.children(likesPerUser, updateUserLikes);
+// Now we have the final render output.
 const resolvedBox = {
   ...box,
-  children: resolvedChildren
+  children
 };
 ```
 
@@ -188,20 +224,30 @@ const resolvedBox = {
 We know from earlier that once we see repeated patterns we can use composition to avoid reimplementing the same pattern over and over again. We can move the logic of extracting and passing state to a low-level function that we reuse a lot.
 
 ```js
+// `FancyBoxWithState` receives `children` that are not resolved yet.
+// Each child contains a `continuation`. It is a partially applied function
+// that would return the child's output, given the child's state and a function to update it.
+// The children also contain unique `key`s so that their state can be kept in a map.
 function FancyBoxWithState(
   children,
   stateMap,
   updateState
 ) {
-  return FancyBox(
-    children.map(child => child.continuation(
-      stateMap.get(child.key),
-      updateState
-    ))
-  );
+  // Now that we have the `stateMap`, inject it into all the continuations
+  // provided by the children to get their resolved rendering output.
+  const resolvedChildren = children.map(child => child.continuation(
+    stateMap.get(child.key),
+    updateState
+  ));
+
+  // Pass the rendered output to `FancyBox`.
+  return FancyBox(resolvedChildren);
 }
 
 function UserList(users) {
+  // `UserList` returns a list of children that expect their state
+  // to get injected at a later point. We don't know their state yet,
+  // so we return partially applied functions ("continuations").
   return users.map(user => {
     continuation: FancyNameBox.bind(null, user),
     key: user.id
@@ -209,13 +255,25 @@ function UserList(users) {
 }
 
 function FancyUserList(users) {
-  return FancyBoxWithState.bind(null,
-    UserList(users)
-  );
+  // `FancyUserList` returns a `continuation` that expects the state
+  // to get injected at a later point. This state will be passed on
+  // to `FancyBoxWithState` which needs it to resolve its stateful children.
+  const continuation = FancyBoxWithState.bind(null, UserList(users));
+  return continuation;
 }
 
+// The render output of `FancyUserList` is not ready to be rendered yet.
+// It's a continuation that still expects the state to be injected.
 const continuation = FancyUserList(data.users);
-continuation(likesPerUser, updateUserLikes);
+
+// Now we can inject the state into it.
+const output = continuation(likesPerUser, updateUserLikes);
+
+// `FancyUserList` will forward the state to `FancyBoxWithState`, which will pass
+// the individual entries in the map to the `continuation`s of its `children`.
+
+// Those `continuations` were generated in `UserList`, so they will pass
+// the state into the individual `FancyNameBox`es in the list.
 ```
 
 ## Memoization Map
