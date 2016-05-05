@@ -286,6 +286,12 @@ We can use the same trick we used for state and pass a memoization cache through
 
 ```js
 function memoize(fn) {
+  // Note how in the previous memoization example, we kept the cached argument and the
+  // cached result as a local variable inside `memoize`. This is not useful for lists
+  // because in a list, the function will be called many times with a different argument.
+
+  // Now the function returned by `memoize` accepts the `memoizationCache` as an argument
+  // in the hope that the list containing a component can supply a "local" cache for each item.
   return function(arg, memoizationCache) {
     if (memoizationCache.arg === arg) {
       return memoizationCache.result;
@@ -301,13 +307,16 @@ function FancyBoxWithState(
   children,
   stateMap,
   updateState,
-  memoizationCache
+  memoizationCacheMap
 ) {
   return FancyBox(
     children.map(child => child.continuation(
       stateMap.get(child.key),
       updateState,
-      memoizationCache.get(child.key)
+      // When the UI changes, it usually happens just in some parts of the screen.
+      // This means that most children with the same keys will likely render to the same output.
+      // We give each child each own memoization map, so that in the common case its output can be memoized.
+      memoizationCacheMap.get(child.key)
     ))
   );
 }
@@ -327,6 +336,7 @@ Now, this example is a bit "out there". I'll use [Algebraic Effects](http://math
 function ThemeBorderColorRequest() { }
 
 function FancyBox(children) {
+  // This will propagate through the caller stack, like "throw"
   const color = raise new ThemeBorderColorRequest();
   return {
     borderWidth: '1px',
@@ -339,6 +349,7 @@ function BlueTheme(children) {
   return try {
     children();
   } catch effect ThemeBorderColorRequest -> [, continuation] {
+    // However, unlike "throw", we can resume the child function and pass some data
     continuation('blue');
   }
 }
