@@ -211,11 +211,11 @@ function FancyUserList(users) {
 // The render output is not fully known yet because the state is not injected.
 const box = FancyUserList(data.users);
 // `box.children()` is a function, so we finally inject the state arguments.
-const children = box.children(likesPerUser, updateUserLikes);
+const resolvedChildren = box.children(likesPerUser, updateUserLikes);
 // Now we have the final render output.
 const resolvedBox = {
   ...box,
-  children
+  children: resolvedChildren
 };
 ```
 
