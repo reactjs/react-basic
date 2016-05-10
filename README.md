@@ -315,7 +315,7 @@ function FancyBoxWithState(
       updateState,
       // When the UI changes, it usually happens just in some parts of the screen.
       // This means that most children with the same keys will likely render to the same output.
-      // We give each child each own memoization map, so that in the common case its output can be memoized.
+      // We give each child its own memoization map, so that in the common case its output can be memoized.
       memoizationCacheMap.get(child.key)
     ))
   );
