@@ -113,11 +113,10 @@ function memoize(fn) {
   var cachedArg;
   var cachedResult;
   return function(arg) {
-    if (cachedArg === arg) {
-      return cachedResult;
+    if (cachedArg !== arg) {
+      cachedArg = arg;
+      cachedResult = fn(arg);
     }
-    cachedArg = arg;
-    cachedResult = fn(arg);
     return cachedResult;
   };
 }
