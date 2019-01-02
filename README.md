@@ -10,7 +10,7 @@ I like to have a simpler mental model that I can ground myself in.
 
 ## Transformation
 
-The core premise for React is that UIs are simply a projection of data into a different form of data. The same input gives the same output. A simple pure function.
+The core premise for React is that UIs are simply a projection of data into a different form of data. The same input gives the same output. A simple function.
 
 ```js
 function NameBox(name) {
